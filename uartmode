@@ -10,6 +10,7 @@ kill_all() {
 	killall mt32d
 	killall fluidsynth
 	killall mpg123
+    killall slattach
 }
 
 conn_speed=115200
@@ -112,16 +113,27 @@ elif [ "$1" == "5" ]; then
 		(
 			while true
 			do
-				taskset 1 midilink UDP QUIET BAUD $conn_speed 
-				wait $!
+				localip=$(ifconfig 2>/dev/null | sed -En 's/127.0.0.1//;s/169.254.*//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
+				remoteip=$(ifconfig 2>/dev/null | sed -En 's/127.0.0.1//;s/169.254.*//;s/.*inet (addr:)?(([0-9]*\.){2}[0-9]*).*/\2/p').254
+
+				if [ -z $localip ]; then
+					echo cannot get local IP for SLIP link.
+					localip=0.0.0.0
+					remoteip=0.0.0.0
+				else
+					echo "SLIP link: $localip->$remoteip @$conn_speed"
+				fi
+
+                taskset 1 slattach -p slip -s $conn_speed /dev/ttyS1  
+                ifconfig sl0 $localip pointopoint $remoteip                    
 
 				[ ! -f /tmp/uartmode5 ] && exit 0
 
-				echo respawn midilink
+				echo respawn slattach
 				sleep 1
-			done 
+			done
 		) &
-	fi
+    fi
 else
 	if [ -f /tmp/uartmode* ]; then
 		kill_all
