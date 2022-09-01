@@ -113,7 +113,6 @@ elif [ "$1" == "5" ]; then
 		(
 			while true
 			do
-				echo In while
 				localip=$(ifconfig 2>/dev/null | sed -En 's/127.0.0.1//;s/169.254.*//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
 				remoteip=$(ifconfig 2>/dev/null | sed -En 's/127.0.0.1//;s/169.254.*//;s/.*inet (addr:)?(([0-9]*\.){2}[0-9]*).*/\2/p').254
 
