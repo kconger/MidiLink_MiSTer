@@ -3,6 +3,7 @@
 kill_all() {
 	rm -f /tmp/uartmode*
 	rm -f /tmp/ML_BAUD
+	ifconfig sl0 down
 	killall midilink
 	killall pppd
 	killall agetty
@@ -11,6 +12,7 @@ kill_all() {
 	killall fluidsynth
 	killall mpg123
 	killall slattach
+	sleep 1s
 }
 
 conn_speed=115200
@@ -113,6 +115,7 @@ elif [ "$1" == "5" ]; then
 		(
 			while true
 			do
+				ifconfig sl0 down
 				localip=$(ifconfig 2>/dev/null | sed -En 's/127.0.0.1//;s/169.254.*//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
 				remoteip=$(ifconfig 2>/dev/null | sed -En 's/127.0.0.1//;s/169.254.*//;s/.*inet (addr:)?(([0-9]*\.){2}[0-9]*).*/\2/p').254
 
@@ -124,7 +127,7 @@ elif [ "$1" == "5" ]; then
 					echo "SLIP link: $localip->$remoteip @$conn_speed"
 				fi
 				taskset 1 slattach -p slip -s $conn_speed /dev/ttyS1 &
-				ifconfig sl0 $localip pointopoint $remoteip                    
+				taskset 2 ifconfig sl0 $localip pointopoint $remoteip                    
 				wait $!
 				[ ! -f /tmp/uartmode5 ] && exit 0
 
